@@ -1,14 +1,9 @@
-local M = {}
+local M = {
+	-- Underline the matched position
+	vim.cmd('match Underlined /\\([^0-9\\[\\]][a-zA-Z0-9./\\\\_-]*:\\)\\(\\d*:\\)\\(\\d*\\)/'),
+}
 
 function M.jump_to_error()
-	--[[ -- Get the current line
-	local current_line = vim.fn.getline('.')
-	-- Get the cursor position
-	local cursor_col = vim.fn.col('.')
-
-	-- Get the error information
-	local error_info = vim.fn.system('rg --vimgrep ' .. current_line) ]]
-
 	local error_info = vim.fn.expand('<cWORD>')
 
 	local parts = vim.fn.split(error_info, ':')
@@ -16,16 +11,38 @@ function M.jump_to_error()
 	local line = tonumber(parts[2])
 	local col = tonumber(parts[3])
 
-	if not filename or not line or not col then
+	if not filename or not line then
 		print("Invalid error information format")
 		print("Expected: <filename>:<line>:<col>")
 		print("Got: " .. error_info)
 		return
 	end
 
-	vim.cmd('tabnew')
 	vim.cmd('edit ' .. filename)
-	vim.cmd('normal! ' .. line .. 'G' .. col .. '|')
+	if not col then
+		vim.cmd('normal! ' .. line .. 'G')
+		return
+	else
+		vim.cmd('normal! ' .. line .. 'G' .. col .. '|')
+	end
+end
+
+function M.next_error()
+	-- look for any word with the format <filename>:<line>:<col> or <filename>:<line>
+	local error_info = vim.fn.search("\\([^0-9\\[\\]][a-zA-Z0-9./\\\\_-]*:\\)\\(\\d*:\\)\\(\\d*\\)", '')
+	if error_info == 0 then
+		print("No errors found")
+		return
+	end
+end
+
+function M.previous_error()
+	-- look for any word with the format <filename>:<line>:<col> or <filename>:<line>
+	local error_info = vim.fn.search("\\([^0-9\\[\\]][a-zA-Z0-9./\\\\_-]*:\\)\\(\\d*:\\)\\(\\d*\\)", 'b')
+	if error_info == 0 then
+		print("No errors found")
+		return
+	end
 end
 
 return M
