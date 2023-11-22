@@ -1,6 +1,7 @@
 local M = {
 	-- Underline the matched position
 	vim.cmd('match Underlined /\\([^0-9\\[\\] ][a-zA-Z0-9./\\\\_-]*:\\)\\(\\d*:\\)\\(\\d*\\)/'),
+	vim.cmd('match Underlined /\\([^0-9\\[\\] ][a-zA-Z0-9./\\\\_-]*:\\)\\(\\d*:\\)/'),
 }
 
 function M.jump_to_error()
@@ -40,7 +41,11 @@ function M.previous_error()
 	-- look for any word with the format <filename>:<line>:<col> or <filename>:<line>
 	local error_info = vim.fn.search("\\([^0-9\\[\\]][a-zA-Z0-9./\\\\_-]*:\\)\\(\\d*:\\)\\(\\d*\\)", 'b')
 	if error_info == 0 then
-		print("No errors found")
+		error_info = vim.fn.search("\\([^0-9\\[\\]][a-zA-Z0-9./\\\\_-]*:\\)\\(\\d*:\\)", 'b')
+		if error_info == 0 then
+			print("No errors found")
+			return
+		end
 		return
 	end
 end
