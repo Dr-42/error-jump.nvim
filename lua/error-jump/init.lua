@@ -1,7 +1,7 @@
 local M = {
 	-- Underline the matched position
-	vim.cmd('match Underlined /\\([^0-9\\[\\] ][a-zA-Z0-9./\\\\_-]*:\\)\\(\\d*:\\)\\(\\d*\\)/'),
 	vim.cmd('match Underlined /\\([^0-9\\[\\] ][a-zA-Z0-9./\\\\_-]*:\\)\\(\\d*:\\)/'),
+	vim.cmd('match Underlined /\\([^0-9\\[\\] ][a-zA-Z0-9./\\\\_-]*:\\)\\(\\d*:\\)\\(\\d*\\)/'),
 }
 
 function M.jump_to_error()
