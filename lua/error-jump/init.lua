@@ -3,6 +3,27 @@ local M = {
 	vim.cmd('match Underlined /\\([^0-9:\\[\\] ][a-zA-Z0-9./\\\\_-]\\+:\\)\\(\\d\\+\\)\\(:\\d\\+\\)\\=/'),
 }
 
+local function recursive_list_files(path)
+	local files = vim.fn.readdir(path)
+	local result = {}
+	for _, file in ipairs(files) do
+		if file:sub(1, 1) == '.' then
+			goto continue
+		end
+		local file_path = path .. '/' .. file
+		if vim.fn.isdirectory(file_path) == 1 then
+			local sub_files = recursive_list_files(file_path)
+			for _, sub_file in ipairs(sub_files) do
+				table.insert(result, sub_file)
+			end
+		else
+			table.insert(result, file_path)
+		end
+		::continue::
+	end
+	return result
+end
+
 function M.jump_to_error()
 	local error_info = vim.fn.expand('<cWORD>')
 
@@ -21,6 +42,17 @@ function M.jump_to_error()
 			"Expected: <filename>:<line>:<col> or <filename>:<line>",
 			"Got: " .. error_info)
 		return
+	end
+
+	-- Check if the direct filepath exists, if not, recursive list all files and match the filename if it is substring
+	if vim.fn.filereadable(filename) == 0 then
+		local files = recursive_list_files(vim.fn.getcwd())
+		for _, file in ipairs(files) do
+			if string.find(file, filename) then
+				filename = file
+				break
+			end
+		end
 	end
 
 	vim.cmd('edit ' .. filename)
