@@ -1,6 +1,7 @@
 local M = {
 	-- Underline the matched position
 	vim.cmd('match Underlined /\\([^0-9:\\[\\] ][a-zA-Z0-9./\\\\_-]\\+:\\)\\(\\d\\+\\)\\(:\\d\\+\\)\\=/'),
+	last_command = nil
 }
 
 local function recursive_list_files(path)
@@ -80,6 +81,12 @@ function M.previous_error()
 		print("No errors found")
 		return
 	end
+end
+
+function M.compile()
+	local compile_command = vim.fn.input("Compile command: ", M.last_command or "")
+	M.last_command = compile_command
+	vim.cmd('terminal ' .. compile_command)
 end
 
 return M
