@@ -86,10 +86,9 @@ end
 function M.compile()
 	local compile_command = vim.fn.input("Compile command: ", M.last_command or "")
 	M.last_command = compile_command
-	-- vim.cmd('terminal ' .. compile_command)
-	-- Open a new tab with the compile command and name it to EJComp
 	vim.cmd('tabnew')
 	vim.cmd('terminal ' .. compile_command)
+	vim.cmd('match Underlined /' .. error_regex .. '/')
 end
 
 return M
