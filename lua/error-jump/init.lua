@@ -1,6 +1,7 @@
+local error_regex = "\\([^0-9:\\[\\] ][a-zA-Z0-9./\\\\_-]\\+:\\)\\(\\d\\+\\)\\(:\\d\\+\\)\\="
 local M = {
 	-- Underline the matched position
-	vim.cmd('match Underlined /\\([^0-9:\\[\\] ][a-zA-Z0-9./\\\\_-]\\+:\\)\\(\\d\\+\\)\\(:\\d\\+\\)\\=/'),
+	vim.cmd('match Underlined /' .. error_regex .. '/'),
 	last_command = nil
 }
 
@@ -59,7 +60,6 @@ function M.jump_to_error()
 	vim.cmd('edit ' .. filename)
 	if not col then
 		vim.cmd('normal! ' .. line .. 'G')
-		return
 	else
 		vim.cmd('normal! ' .. line .. 'G' .. col .. '|')
 	end
@@ -67,7 +67,7 @@ end
 
 function M.next_error()
 	-- look for any word with the format <filename>:<line>:<col> or <filename>:<line>
-	local error_info = vim.fn.search("\\([^0-9:\\[\\] ][a-zA-Z0-9./\\\\_-]\\+:\\)\\(\\d\\+\\)\\(:\\d\\+\\)\\=", '')
+	local error_info = vim.fn.search(error_regex, '')
 	if error_info == 0 then
 		print("No errors found")
 		return
@@ -76,7 +76,7 @@ end
 
 function M.previous_error()
 	-- look for any word with the format <filename>:<line>:<col> or <filename>:<line>
-	local error_info = vim.fn.search("\\([^0-9:\\[\\] ][a-zA-Z0-9./\\\\_-]\\+:\\)\\(\\d\\+\\)\\(:\\d\\+\\)\\=", 'b')
+	local error_info = vim.fn.search(error_regex, 'b')
 	if error_info == 0 then
 		print("No errors found")
 		return
@@ -86,6 +86,9 @@ end
 function M.compile()
 	local compile_command = vim.fn.input("Compile command: ", M.last_command or "")
 	M.last_command = compile_command
+	-- vim.cmd('terminal ' .. compile_command)
+	-- Open a new tab with the compile command and name it to EJComp
+	vim.cmd('tabnew')
 	vim.cmd('terminal ' .. compile_command)
 end
 
