@@ -2,7 +2,8 @@ local error_regex = "\\([^0-9:\\[\\] ][a-zA-Z0-9./\\\\_-]\\+:\\)\\(\\d\\+\\)\\(:
 local M = {
 	-- Underline the matched position
 	vim.cmd('match Underlined /' .. error_regex .. '/'),
-	last_command = nil
+	last_command = nil,
+	terminal_bufnr = nil
 }
 
 local function recursive_list_files(path)
@@ -86,8 +87,35 @@ end
 function M.compile()
 	local compile_command = vim.fn.input("Compile command: ", M.last_command or "")
 	M.last_command = compile_command
-	vim.cmd('tabnew')
-	vim.cmd('terminal ' .. compile_command)
+
+	-- Check if the terminal buffer already exists and is valid
+	if M.terminal_bufnr and vim.fn.bufexists(M.terminal_bufnr) == 1 then
+		-- Check if the terminal job is still running
+		local job_id = vim.fn.getbufvar(M.terminal_bufnr, 'terminal_job_id')
+		if job_id ~= 0 and vim.fn.jobwait({ job_id }, 0)[1] == -1 then
+			-- The terminal job is still running, reuse the terminal
+			vim.cmd('buffer ' .. M.terminal_bufnr)
+			-- Send the compile command to the terminal
+			vim.cmd('call jobsend(b:terminal_job_id, "' .. compile_command .. '\\n")')
+		else
+			-- The terminal job is closed, so create a new terminal buffer
+			-- Close the current terminal buffer
+			vim.cmd('bd ' .. M.terminal_bufnr)
+			-- Create a new terminal buffer
+			vim.cmd('tabnew')
+			vim.cmd('terminal ' .. compile_command)
+			-- Store the new terminal buffer number
+			M.terminal_bufnr = vim.fn.bufnr('%')
+		end
+	else
+		-- If the terminal buffer doesn't exist, create a new one
+		vim.cmd('tabnew')
+		vim.cmd('terminal ' .. compile_command)
+		-- Store the terminal buffer number
+		M.terminal_bufnr = vim.fn.bufnr('%')
+	end
+
+	-- Highlight errors
 	vim.cmd('match Underlined /' .. error_regex .. '/')
 end
 
