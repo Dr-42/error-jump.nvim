@@ -102,14 +102,12 @@ function M.compile()
 			-- Close the current terminal buffer
 			vim.cmd('bd ' .. M.terminal_bufnr)
 			-- Create a new terminal buffer
-			vim.cmd('tabnew')
 			vim.cmd('terminal ' .. compile_command)
 			-- Store the new terminal buffer number
 			M.terminal_bufnr = vim.fn.bufnr('%')
 		end
 	else
 		-- If the terminal buffer doesn't exist, create a new one
-		vim.cmd('tabnew')
 		vim.cmd('terminal ' .. compile_command)
 		-- Store the terminal buffer number
 		M.terminal_bufnr = vim.fn.bufnr('%')
